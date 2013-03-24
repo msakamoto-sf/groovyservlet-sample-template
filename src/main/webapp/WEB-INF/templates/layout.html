@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="{{config.defaultEncoding}}">
+    <title>{{title}} - {{config.applicationTitle}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="{{context_path}}/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="{{context_path}}/css/bootstrap-responsive.min.css" rel="stylesheet" media="screen">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    {{#util.html}}
+    {{#script}}/js/bootstrap.min.js{{/script}}
+    {{/util.html}}
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#"></a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li class="active"><a href="{{context_path}}/">{{config.applicationTitle}}</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Demos<b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="{{context_path}}/demo/responses/index.groovy">Various Output</a></li>
+                  <li><a href="{{context_path}}/demo/sessions/index.groovy">Session Usage</a></li>
+                </ul>
+              </li>
+              <li><a href="https://github.com/msakamoto-sf/groovyservlet-sample-template" target="_blank">GoTo GitHub</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      {{{__placeholder__.contents}}}
+      <footer>
+      <p>&copy; msakamoto-sf 2013</p>
+      </footer>
+    </div><!-- /container -->
+  </body>
+</html>

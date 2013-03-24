@@ -1,0 +1,39 @@
+<h1>{{title}}</h1>
+<p>
+Hello, World.<br>
+こんにちは。<br>
+</p>
+<p>
+<a href="{{context_path}}/index.groovy?changelayoutcs=on">change layout and charset(euc-jp)</a>
+</p>
+<h3>request info</h3>
+<p>
+<ul>
+{{#req}}
+<li>{{key}} = {{value}}</li>
+{{/req}}
+</ul>
+</p>
+<h3>some configurations</h3>
+<p>
+<ul>
+<li>defaultEncoding = {{config.defaultEncoding}}</li>
+<li>defaultContentType = {{config.defaultContentType}}</li>
+<li>applicationTitle = {{config.applicationTitle}}</li>
+<li>renderer.templateDir = {{config.renderer.templateDir}}</li>
+<li>renderer.defaultLayout = {{config.renderer.defaultLayout}}</li>
+</ul>
+</p>
+<h3>some utility functions</h3>
+<p>
+HTML Escape : {{#util.h}}<script>alert('xss') & alert("xss")</script>{{/util.h}}
+</p>
+<p>
+ECMA Escape : {{#util.ecma}}{"key1":'こんにちは', "yen\\mark\"qutos": '<br />'}{{/util.ecma}}
+</p>
+<p>
+URL Encode : {{#util.urlencode}}':/?#[]@!$&\'()*+,;=:/?#[]@!$&\'()*+,;=.-*_, +"\'.-*_, +"\'{{/util.urlencode}}
+</p>
+
+
+

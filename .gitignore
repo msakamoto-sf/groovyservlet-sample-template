@@ -1,0 +1,10 @@
+*~
+.classpath
+.project
+.gradle/
+build/
+.settings/
+bin/
+out/
+src/main/webapp/WEB-INF/classes/
+.DS_Store

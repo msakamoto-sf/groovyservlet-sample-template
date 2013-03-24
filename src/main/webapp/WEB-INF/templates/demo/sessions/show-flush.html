@@ -1,0 +1,10 @@
+<h1>{{title}}</h1>
+<p>
+session id = [{{session_id}}]<br>
+<ul>
+  {{#flush}}
+  <li>{{.}}</li>
+  {{/flush}}
+</ul>
+<a href="./clear.groovy">next to clear session</a>
+</p>
