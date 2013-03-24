@@ -5,14 +5,14 @@ If you want some light-weight web application framework, this template will be a
 
 ## quick start
 
-1. Run ```gradle tomcatRun``` .
-2. Put ```xxxx.groovy``` or copy sample files under ```src/main/webapp/``` .
-3. Open browser, access to ```http://localhost:8090/xxxx.groovy``` .
+1. Run ```gradle tomcatRun```.
+2. Put ```xxxx.groovy``` or copy sample files under ```src/main/webapp/```.
+3. Open browser, access to ```http://localhost:8090/xxxx.groovy```.
 4. NO NEED to restarting groovy neither tomcat.
 
 ## how to customize
 
-1. Read ``src/main/groovy/gsst/ToolKit.groovy```, and hack it. :)
+1. Read ```src/main/groovy/gsst/ToolKit.groovy```, and hack it. :)
 
 ## notes
 
