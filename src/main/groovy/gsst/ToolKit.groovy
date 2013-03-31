@@ -96,6 +96,31 @@ class SessionWrapper
 // }}}
 
 @Slf4j
+class SampleContextListener implements ServletContextListener
+{
+    def SampleContextListener()
+    {
+        log.info('Customize SampleContextListener.')
+        log.info(this.dump())
+    }
+    void contextInitialized(ServletContextEvent sce)
+    {
+        ServletContext ctx = sce.getServletContext()
+        ctx.setAttribute('sample.attr', 'Hello, ServletContext')
+        ctx.log('Customize Context Initialize Event Here.')
+        log.info('Customize Context Initialize Event Here.')
+        log.info(this.dump())
+    }
+    void contextDestroyed(ServletContextEvent sce)
+    {
+        ServletContext ctx = sce.getServletContext()
+        ctx.log('Customize Context Destory Event Here.')
+        log.info('Customize Context Destroy Event Here.')
+        log.info(this.dump())
+    }
+}
+
+@Slf4j
 class ToolKit
 {
     HttpServletRequest request
