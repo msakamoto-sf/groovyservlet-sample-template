@@ -19,8 +19,10 @@ import javax.servlet.*
 import javax.servlet.http.*
 import groovy.util.logging.*
 import groovy.json.*
+import groovy.sql.*
 import com.github.plecong.hogan.*
 import org.apache.commons.lang3.StringEscapeUtils
+import org.h2.jdbcx.*
 
 // {{{ SessionWrapper
 
@@ -94,10 +96,12 @@ class SessionWrapper
 }
 
 // }}}
+// {{{ SampleContextListener
 
 @Slf4j
 class SampleContextListener implements ServletContextListener
 {
+    JdbcConnectionPool h2cp
     def SampleContextListener()
     {
         log.info('Customize SampleContextListener.')
@@ -110,6 +114,20 @@ class SampleContextListener implements ServletContextListener
         ctx.log('Customize Context Initialize Event Here.')
         log.info('Customize Context Initialize Event Here.')
         log.info(this.dump())
+
+        def initconfig = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
+        def ds = initconfig.datasources.dev
+        this.h2cp = JdbcConnectionPool.create(ds.url, ds.username, ds.password)
+        log.info('h2db connection pool initialized for ' + ds.url)
+        ctx.setAttribute(SampleH2DbConnector.H2DBCP_KEY, this.h2cp)
+
+        Sql sql = new Sql(this.h2cp.getConnection())
+        def creates = initconfig.datasources.setup
+        creates.each {
+            log.trace(it)
+            sql.execute(it)
+        }
+        sql.close()
     }
     void contextDestroyed(ServletContextEvent sce)
     {
@@ -117,8 +135,37 @@ class SampleContextListener implements ServletContextListener
         ctx.log('Customize Context Destory Event Here.')
         log.info('Customize Context Destroy Event Here.')
         log.info(this.dump())
+        this.h2cp.dispose()
+        log.info('h2db connection pool disposed.')
     }
 }
+
+// }}}
+// {{{ SampleH2DbConnector
+
+class SampleH2DbConnector
+{
+    static final String H2DBCP_KEY = 'sample.h2db.ConnectionPool'
+    ServletContext context
+    List<Sql>conns = new ArrayList<Sql>();
+    def SampleH2DbConnector(ServletContext ctx)
+    {
+        this.context = ctx
+    }
+    Sql borrow()
+    {
+        JdbcConnectionPool h2cp = ctx.getAttribute(H2DBCP_KEY)
+        Sql c = h2cp.getConnection()
+        conns << c
+        return c
+    }
+    void close()
+    {
+        conns.each { c -> c.close() }
+    }
+}
+
+// }}}
 
 @Slf4j
 class ToolKit

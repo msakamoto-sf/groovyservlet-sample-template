@@ -59,6 +59,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.2'
     compile 'ch.qos.logback:logback-classic:1.0.9'
     compile 'com.github.plecong:hogan-groovy:3.0'
+    compile 'com.h2database:h2:1.3.171'
     providedCompile 'javax.servlet:servlet-api:2.5'
     testCompile 'junit:junit:4.11'
 
@@ -75,9 +76,11 @@ dependencies {
     }
 }
 
+[tomcatRun, tomcatStop]*.stopPort = 8081
+[tomcatRun, tomcatStop]*.stopKey = 'stopKey'
 tomcatRun {
     httpPort = 8090
     reloadable = true
     contextPath = '/'
+    stopKey = 'stopthis'
 }
-
