@@ -154,8 +154,8 @@ class SampleH2DbConnector
     }
     Sql borrow()
     {
-        JdbcConnectionPool h2cp = ctx.getAttribute(H2DBCP_KEY)
-        Sql c = h2cp.getConnection()
+        JdbcConnectionPool h2cp = context.getAttribute(H2DBCP_KEY)
+        Sql c = new Sql(h2cp.getConnection())
         conns << c
         return c
     }
@@ -176,6 +176,9 @@ class ToolKit
     SessionWrapper sess
     ConfigObject config
 
+    // Customize This
+    SampleH2DbConnector dbcon // per request instance
+
     def ToolKit(HttpServletRequest req, HttpServletResponse res, ServletContext ctx)
     {
         this.request = req
@@ -183,12 +186,14 @@ class ToolKit
         this.context = ctx
         this.config = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
         this.sess = new SessionWrapper(req)
+        this.dbcon = new SampleH2DbConnector(ctx)
     }
 
     void serve(cl)
     {
         cl.delegate = this
         cl.call()
+        this.dbcon.close()
     }
 
     def redirect(url)

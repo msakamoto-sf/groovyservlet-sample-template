@@ -1,0 +1,29 @@
+<h1>{{title}}</h1>
+<div>
+<ul class="nav nav-pills">
+  <li><a href="../">SQL Demo Menu</a></li>
+  <li class="active"><a href="#">Users</a></li>
+  <li><a href="../articles/">Articles</a></li>
+</ul>
+</div>
+<div>
+<table class="table table-bordered table-hover table-condensed">
+  <thread>
+    <tr>
+      <th>id</th>
+      <th>login</th>
+      <th>name</th>
+      <th>email</th>
+      <th>updated_at</th>
+    </tr>
+  </thread>
+  {{#users}}
+  <tr>
+    <td>{{id}}</td>
+    <td>{{login}}</td>
+    <td>{{name}}</td>
+    <td>{{email}}</td>
+    <td>{{updated_at}}</td>
+  </tr>
+  {{/users}}
+</table>
