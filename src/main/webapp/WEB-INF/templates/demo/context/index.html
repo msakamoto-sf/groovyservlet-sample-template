@@ -1,0 +1,26 @@
+<h1>{{title}}</h1>
+<div>
+  <h2>Context InitParameters</h2>
+  <dl>
+    {{#initparams}}
+    <dt>{{key}}</dt>
+    <dd><pre>{{value}}</pre></dd>
+    {{/initparams}}
+    {{^initparams}}
+    <dt>(no init parameters)</dt>
+    <dd></dd>
+    {{/initparams}}
+  </dl>
+</div>
+<div>
+  <h2>Context Attributes</h2>
+  <dl>
+    {{#attrs}}
+    <dt>{{key}}</dt>
+    <dd><pre>{{value}}</pre></dd>
+    {{/attrs}}
+  </dl>
+</div>
+<p>
+  <a href="{{context_path}}/demo/context/countup.groovy">Context Attribute Count-Up Demo</a>
+</p>
