@@ -1,6 +1,7 @@
 defaultEncoding = 'UTF-8'
 defaultContentType = 'text/html; charset=UTF-8'
 applicationTitle = 'groovyservlet-sample-template'
+use_config_cache = true
 renderer {
     use_compile_cache = true
     templateDir = '/WEB-INF/templates/'

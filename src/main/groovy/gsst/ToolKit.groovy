@@ -120,6 +120,10 @@ class SampleContextListener implements ServletContextListener
 
         def initconfig = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
 
+        if (initconfig.use_config_cache) {
+            ctx.setAttribute(ToolKit.CONTEXT_ATTR_CONFIG_CACHE, initconfig)
+        }
+
         HoganRenderer hr = new HoganRenderer(initconfig)
         ctx.setAttribute(HoganRenderer.CONTEXT_ATTR_HR_KEY, hr)
 
@@ -238,6 +242,7 @@ class HoganRenderer
 @Slf4j
 class ToolKit
 {
+    static final String CONTEXT_ATTR_CONFIG_CACHE = 'gsst.ToolKit.CONFIG_CACHE'
     HttpServletRequest request
     HttpServletResponse response
     ServletContext context
@@ -252,7 +257,8 @@ class ToolKit
         this.request = req
         this.response = res
         this.context = ctx
-        this.config = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
+        this.config = ctx.getAttribute(CONTEXT_ATTR_CONFIG_CACHE) ?: new ConfigSlurper().
+            parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
         this.sess = new SessionWrapper(req)
         this.dbcon = new SampleH2DbConnector(ctx)
     }
