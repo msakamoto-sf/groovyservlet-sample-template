@@ -26,6 +26,9 @@ import org.h2.jdbcx.*
 
 // {{{ SessionWrapper
 
+/*
+ * THIS IS ''NOT'' THREAD SAFE OPERATION
+ */
 class SessionWrapper
 {
     static final String SESSION_SCOPE_APP = '__APP__'
@@ -116,6 +119,10 @@ class SampleContextListener implements ServletContextListener
         log.info(this.dump())
 
         def initconfig = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
+
+        HoganRenderer hr = new HoganRenderer(initconfig)
+        ctx.setAttribute(HoganRenderer.CONTEXT_ATTR_HR_KEY, hr)
+
         def ds = initconfig.datasources.dev
         this.h2cp = JdbcConnectionPool.create(ds.url, ds.username, ds.password)
         log.info('h2db connection pool initialized for ' + ds.url)
@@ -162,6 +169,67 @@ class SampleH2DbConnector
     void close()
     {
         conns.each { c -> c.close() }
+    }
+}
+
+// }}}
+// {{{ HoganRenderer
+
+@Slf4j
+class HoganRenderer
+{
+    static final String CONTEXT_ATTR_HR_KEY = 'gsst.HoganRenderer'
+    class CompiledPair {
+        String templateName
+        String templateSrc
+        Class<HoganTemplate> templateClass
+    }
+
+    ConfigObject config
+
+    Map<String, CompiledPair> compiledClasses = new HashMap<String, CompiledPair>()
+
+    def HoganRenderer(ConfigObject _config)
+    {
+        this.config = _config
+    }
+
+    protected Class<HoganTemplate> getTemplate(_templateName, _templateSrc)
+    {
+        /*
+         * NEED MORE BETTER THREAD SAFETY
+         */
+        if (this.config.renderer.use_compile_cache) {
+            synchronized(this.compiledClasses) {
+                if (this.compiledClasses[_templateName]) {
+                    CompiledPair cp = this.compiledClasses[_templateName]
+                    String cachedBody = cp.templateSrc
+                    if (cachedBody.equals(_templateSrc)) {
+                        log.debug("cache for ${_templateName} hit.")
+                        return cp.templateClass
+                    }
+                }
+            }
+        }
+        Class<HoganTemplate> htclazz = Hogan.compileClass(_templateSrc)
+        if (this.config.renderer.use_compile_cache) {
+            CompiledPair cp = new CompiledPair(
+                templateName: _templateName,
+                templateSrc: _templateSrc,
+                templateClass: htclazz)
+            synchronized(this.compiledClasses) {
+                log.debug("cache for ${_templateName} was updated.")
+                this.compiledClasses[_templateName] = cp
+            }
+        }
+        return htclazz
+    }
+
+    String render(bindData, templateName, templateSrc)
+    {
+        Class<HoganTemplate> htclazz = getTemplate(templateName, templateSrc)
+        HoganTemplate t = Hogan.create(htclazz, templateSrc)
+        return t.render(bindData)
     }
 }
 
@@ -239,12 +307,11 @@ class ToolKit
 
         def templatePath = config.renderer.templateDir + template
         def layoutPath = config.renderer.templateDir + layout
+        HoganRenderer hr = this.context.getAttribute(HoganRenderer.CONTEXT_ATTR_HR_KEY)
 
-        def contents = Hogan.compile(loadResourceAsString(templatePath)).render(bindData)
-
+        def contents = hr.render(bindData, template, loadResourceAsString(templatePath))
         bindData['__placeholder__'] = ['contents': contents]
-
-        def pagetext = Hogan.compile(loadResourceAsString(layoutPath)).render(bindData)
+        def pagetext = hr.render(bindData, layout, loadResourceAsString(layoutPath))
         response.setContentType(contentType)
         response.writer << pagetext
     }
