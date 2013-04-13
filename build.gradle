@@ -1,6 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'war'
 apply plugin: 'tomcat'
+apply plugin: 'jetty'
 
 archivesBaseName = 'gsst'
 version = '0.0.1-SNAPSHOT'

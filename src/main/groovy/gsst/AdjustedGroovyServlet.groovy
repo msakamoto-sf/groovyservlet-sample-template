@@ -15,11 +15,18 @@ limitations under the License.
 }}} */
 package gsst
 
+import org.apache.commons.lang3.*
+import javax.servlet.*
 import groovy.servlet.*
 
 public class AdjustedGroovyServlet extends GroovyServlet {
     public URLConnection getResourceConnection(String name) throws ResourceException {
-        if (name.startsWith("file:")) name = name.replaceFirst("file:", "")
+        ServletConfig sconfig = getServletConfig()
+        ServletContext sctx = sconfig.getServletContext()
+        String sinfo = sctx.getServerInfo().toLowerCase()
+        if (sinfo && sinfo.contains("tomcat") && SystemUtils.IS_OS_WINDOWS) {
+            if (name.startsWith("file:")) name = name.replaceFirst("file:", "")
+        }
         return super.getResourceConnection(name)
     }
 }

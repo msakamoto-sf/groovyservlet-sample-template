@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <filter>
+    <filter-name>separateRequestFilter</filter-name>
+    <filter-class>gsst.SeparateRequestFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>separateRequestFilter</filter-name>
+    <url-pattern>*.groovy</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>FORWARD</dispatcher>
+    <dispatcher>INCLUDE</dispatcher>
+    <dispatcher>ERROR</dispatcher>
+  </filter-mapping>
   <listener>
     <listener-class>gsst.SampleContextListener</listener-class>
   </listener>

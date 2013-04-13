@@ -118,11 +118,8 @@ class SampleContextListener implements ServletContextListener
         log.info('Customize Context Initialize Event Here.')
         log.info(this.dump())
 
-        def initconfig = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
-
-        if (initconfig.use_config_cache) {
-            ctx.setAttribute(ToolKit.CONTEXT_ATTR_CONFIG_CACHE, initconfig)
-        }
+        ConfigObject initconfig = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
+        ctx.setAttribute(ToolKit.CONTEXT_ATTR_CONFIG_CACHE, initconfig)
 
         HoganRenderer hr = new HoganRenderer(initconfig)
         ctx.setAttribute(HoganRenderer.CONTEXT_ATTR_HR_KEY, hr)
@@ -238,6 +235,135 @@ class HoganRenderer
 }
 
 // }}}
+// {{{ SeparateRequestFilter
+
+class SeparateRequestFilter implements Filter {
+
+    void init(FilterConfig fconfig) throws ServletException {}
+
+    void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException
+    {
+        HttpServletRequest hreq = (HttpServletRequest)req;
+        req = new BufferedServletRequestWrapper(hreq);
+        chain.doFilter(req, res);
+    }
+
+    void destroy() {}
+}
+
+// }}}
+// {{{ KeyedMultiValues<T>
+
+class KeyedMultiValues<T>
+{
+    final Map<String, LinkedList<T>> kmv
+
+    def KeyedMultiValues()
+    {
+        this.kmv = new HashMap<String, LinkedList<T>>();
+    }
+
+    void add(String key, T val)
+    {
+        LinkedList<T> mv = new LinkedList<T>();
+        if (this.kmv.containsKey(key)) {
+            mv = this.kmv.get(key)
+        }
+        mv.add(val)
+        this.kmv.put(key, mv)
+    }
+
+    Map<String, LinkedList<T>> all()
+    {
+        return Collections.unmodifiableMap(kmv)
+    }
+
+    boolean has(String key)
+    {
+        return this.kmv.containsKey(key)
+    }
+
+    T head(String key)
+    {
+        if (!this.kmv.containsKey(key)) {
+            return null
+        }
+        LinkedList<T> mv = this.kmv.get(key)
+        if (0 == mv.size()) {
+            return null
+        }
+        return mv.getFirst()
+    }
+
+    LinkedList<T> list(String key)
+    {
+        if (!this.kmv.containsKey(key)) {
+            return Collections.EMPTY_LIST
+        }
+        LinkedList<T> mv = this.kmv.get(key)
+        return Collections.unmodifiableList(mv)
+    }
+}
+
+// }}}
+// {{{ SeparateRequestWrapper
+
+class SeparateRequestWrapper
+{
+    HttpServletRequest req
+    String defaultEncoding
+
+    final KeyedMultiValues<String> GET
+    final KeyedMultiValues<String> POST
+
+    def SeparateRequestWrapper(HttpServletRequest _req, String _defaultEncoding)
+    {
+        this.req = _req
+        this.defaultEncoding = _defaultEncoding
+        this.GET = new KeyedMultiValues<String>()
+        this.POST = new KeyedMultiValues<String>()
+
+        parseUrlEncoded(this.GET, req.getQueryString())
+
+        if (!'GET'.equals(req.getMethod())) {
+            String contentType = req.getHeader('Content-Type')
+            if ('application/x-www-form-urlencoded'.equals(contentType)) {
+                ServletInputStream sis = req.getInputStream()
+                String postBody = sis.getText()
+                sis.reset()
+                parseUrlEncoded(this.POST, postBody)
+            } else if ('multipart/form-data'.equals(contentType)) {
+            }
+        }
+    }
+
+    protected String urldecode(String encoded)
+    {
+        String v = ''
+        try {
+            v = URLDecoder.decode(encoded, defaultEncoding)
+        } catch (UnsupportedEncodingException ignore) {}
+        return v
+    }
+
+    protected void parseUrlEncoded(KeyedMultiValues<String> kmv, String source)
+    {
+        if (!source) { source = '' }
+        source.split('&').each { kvsrc ->
+            def kv = kvsrc.split('=', 2) as String[]
+            if (kv.size() == 2) {
+                def decodedK = urldecode(kv[0])
+                def decodedV = urldecode(kv[1])
+                kmv.add(decodedK, decodedV)
+            } else {
+                def decodedK = urldecode(kvsrc)
+                kmv.add(decodedK, '')
+            }
+        }
+    }
+}
+
+// }}}
 
 @Slf4j
 class ToolKit
@@ -248,6 +374,7 @@ class ToolKit
     ServletContext context
     SessionWrapper sess
     ConfigObject config
+    SeparateRequestWrapper sreqw
 
     // Customize This
     SampleH2DbConnector dbcon // per request instance
@@ -260,6 +387,7 @@ class ToolKit
         this.config = ctx.getAttribute(CONTEXT_ATTR_CONFIG_CACHE) ?: new ConfigSlurper().
             parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
         this.sess = new SessionWrapper(req)
+        this.sreqw = new SeparateRequestWrapper(req, this.config.defaultEncoding)
         this.dbcon = new SampleH2DbConnector(ctx)
     }
 
