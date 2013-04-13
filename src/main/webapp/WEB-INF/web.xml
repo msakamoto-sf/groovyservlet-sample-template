@@ -15,6 +15,9 @@
   <listener>
     <listener-class>gsst.SampleContextListener</listener-class>
   </listener>
+  <listener>
+    <listener-class>org.apache.commons.fileupload.servlet.FileCleanerCleanup</listener-class>
+  </listener>
   <servlet>
     <servlet-name>Groovlet</servlet-name>
     <servlet-class>gsst.AdjustedGroovyServlet</servlet-class>
