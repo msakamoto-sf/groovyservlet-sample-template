@@ -1,8 +1,44 @@
 <h1>{{title}}</h1>
-<p>
+<h3>Typical GET/POST/FileUpload Form and Retrieving Request Parameter Samples</h3>
+<div>
   <ul>
     <li><a href="{{context_path}}/demo/forms/get.groovy">GET Form Demo</a></li>
     <li><a href="{{context_path}}/demo/forms/post.groovy">POST Form Demo(x-www-form-urlencoded)</a></li>
     <li><a href="{{context_path}}/demo/forms/multipart.groovy">File Upload Form Demo(multipart/form-data)</a></li>
   </ul>
-</p>
+</div>
+<h3>JSON Request Sample</h3>
+<div>
+  <form>
+    <input type="button" value="send json" id="sendjson">
+    <input type="button" value="clear result" id="clear">
+  </form>
+  <div id="json_result"></div>
+<script>
+  $(function() {
+    var json_data = {
+      key1: 'message1',
+      key2: [100, 200, 300],
+      key3: { k1: 'abc', k2: 'def', k3: 'ghi' }
+    };
+    $('#sendjson').click(function() {
+      $.ajax({
+        url: './json.groovy',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(json_data),
+        dataType: 'text',
+
+      }).done(function(data) {
+        $('#json_result').html(data);
+      }).fail(function(xhr, sc) {
+        alert('error');
+        console.log(sc);
+      });
+    });
+    $('#clear').click(function() {
+      $('#json_result').html('');
+    });
+  })();
+</script>
+</div>
