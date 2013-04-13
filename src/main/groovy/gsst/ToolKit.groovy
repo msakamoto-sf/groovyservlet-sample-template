@@ -541,5 +541,21 @@ class ToolKit
         // rfc3986 compatible
         URLEncoder.encode(s, config.defaultEncoding).replace('+', '%20').replace('*', '%2A')
     }
+
+    String buildQueryString(listWhichHeadIsQueryName)
+    {
+        def params = []
+        listWhichHeadIsQueryName.each { ar ->
+            if (ar.size() == 1) {
+                params << urlencode(ar[0])
+            } else if (ar.size() > 1) {
+                def key = ar.head()
+                ar.tail().each { value ->
+                    params << urlencode(key) + '=' + urlencode(value)
+                }
+            }
+        }
+        return params.join('&')
+    }
 }
 
