@@ -8,21 +8,8 @@
   {{^gets}}<li>(empty)</li>{{/gets}}
   </ul>
 </div>
-<div>
-  <h3>Request Body</h3>
-  <pre>{{requestBody}}</pre>
-</div>
-<div>
-  <h3>Name - Values in Request Body</h3>
-  <ul>
-  {{#posts}}
-  <li>{{key}}<ul>{{#values}}<li>{{.}}</li>{{/values}}</ul></li>
-  {{/posts}}
-  {{^posts}}<li>(empty)</li>{{/posts}}
-  </ul>
-</div>
 <h3>Request Form</h3>
-<form action="{{context_path}}/demo/forms/post.groovy?var1=val1&amp;var2=%E6%97%A5%E6%9C%AC%E8%AA%9E&amp;%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%82%AD%E3%83%BC=%E6%97%A5%E6%9C%AC%E8%AA%9E%E5%80%A4&amp;arr1=el1&amp;arr1=el2%22%27%3C%26%3E&amp;%E6%97%A5%E6%9C%AC%E8%AA%9E%E9%85%8D%E5%88%97=%E6%97%A5%E6%9C%AC%E8%AA%9E%E8%A6%81%E7%B4%A01&amp;%E6%97%A5%E6%9C%AC%E8%AA%9E%E9%85%8D%E5%88%97=%E6%97%A5%E6%9C%AC%E8%AA%9E%E8%A6%81%E7%B4%A02" method="post" class="form-horizontal">
+<form action="{{context_path}}/demo/forms/get.groovy" class="form-horizontal">
   <table class="table">
     <tr>
       <th>var1</th>

@@ -5,24 +5,29 @@ new ToolKit(request, response, context).serve {
 def m = [:]
 m['title'] = 'POST Form Demo(x-www-form-urlencoded)'
 
-def kmv_g = sreqw.GET.all()
-kmv_g.each {
-    log.debug('------------------------')
-    log.debug(it.key)
-    def lists = it.value
-    lists.each { it2 ->
-        log.debug(it2)
+m['requestBody'] = sreqw.getRequestBodyAsText()
+
+def gets = []
+sreqw.GET.all().each { kvm ->
+    pname = kvm.key
+    def values = []
+    kvm.value.each {
+        values << it
     }
+    gets << ['key': kvm.key, 'values': values]
 }
-def kmv_p = sreqw.POST.all()
-kmv_p.each {
-    log.debug('------------------------')
-    log.debug(it.key)
-    def lists = it.value
-    lists.each { it2 ->
-        log.debug(it2)
+m['gets'] = gets
+
+def posts = []
+sreqw.POST.all().each { kvm ->
+    pname = kvm.key
+    def values = []
+    kvm.value.each {
+        values << it
     }
+    posts << ['key': kvm.key, 'values': values]
 }
+m['posts'] = posts
 
 render(data:m, template:'demo/forms/post.html')
 }

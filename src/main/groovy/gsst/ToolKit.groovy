@@ -22,6 +22,10 @@ import groovy.json.*
 import groovy.sql.*
 import com.github.plecong.hogan.*
 import org.apache.commons.lang3.StringEscapeUtils
+import org.apache.commons.fileupload.*
+import org.apache.commons.fileupload.servlet.*
+import org.apache.commons.fileupload.disk.*
+import org.apache.commons.io.FileCleaningTracker
 import org.h2.jdbcx.*
 
 // {{{ SessionWrapper
@@ -311,30 +315,55 @@ class KeyedMultiValues<T>
 class SeparateRequestWrapper
 {
     HttpServletRequest req
+    ServletContext ctx
     String defaultEncoding
 
     final KeyedMultiValues<String> GET
     final KeyedMultiValues<String> POST
+    final KeyedMultiValues<FileItem> FILE
 
-    def SeparateRequestWrapper(HttpServletRequest _req, String _defaultEncoding)
+    def SeparateRequestWrapper(HttpServletRequest _req, ServletContext _ctx, String _defaultEncoding)
     {
         this.req = _req
+        this.ctx = _ctx
         this.defaultEncoding = _defaultEncoding
         this.GET = new KeyedMultiValues<String>()
         this.POST = new KeyedMultiValues<String>()
+        this.FILE = new KeyedMultiValues<FileItem>()
 
         parseUrlEncoded(this.GET, req.getQueryString())
 
         if (!'GET'.equals(req.getMethod())) {
             String contentType = req.getHeader('Content-Type')
             if ('application/x-www-form-urlencoded'.equals(contentType)) {
-                ServletInputStream sis = req.getInputStream()
-                String postBody = sis.getText()
-                sis.reset()
-                parseUrlEncoded(this.POST, postBody)
-            } else if ('multipart/form-data'.equals(contentType)) {
+                parseUrlEncoded(this.POST, this.getRequestBodyAsText())
+            } else if (ServletFileUpload.isMultipartContent(this.req)) {
+                parseMultipart()
             }
         }
+    }
+
+    byte[] getRequestBodyAsByte()
+    {
+        ServletInputStream sis = req.getInputStream()
+        sis.reset()
+        def bytes = sis.getBytes() as byte[]
+        sis.reset()
+        return bytes
+    }
+
+    String getRequestBodyAsText()
+    {
+        return getRequestBodyAsText(this.defaultEncoding)
+    }
+
+    String getRequestBodyAsText(String charset)
+    {
+        ServletInputStream sis = req.getInputStream()
+        sis.reset()
+        String body = sis.getText(charset)
+        sis.reset()
+        return body
     }
 
     protected String urldecode(String encoded)
@@ -349,6 +378,7 @@ class SeparateRequestWrapper
     protected void parseUrlEncoded(KeyedMultiValues<String> kmv, String source)
     {
         if (!source) { source = '' }
+        if (source.length() == 0) { return }
         source.split('&').each { kvsrc ->
             def kv = kvsrc.split('=', 2) as String[]
             if (kv.size() == 2) {
@@ -358,6 +388,27 @@ class SeparateRequestWrapper
             } else {
                 def decodedK = urldecode(kvsrc)
                 kmv.add(decodedK, '')
+            }
+        }
+    }
+
+    protected void parseMultipart()
+    {
+        FileItemFactory factory = new DiskFileItemFactory()
+        File repository = (File)this.ctx.getAttribute('javax.servlet.context.tempdir')
+        factory.setRepository(repository)
+
+        FileCleaningTracker fileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(this.ctx)
+        factory.setFileCleaningTracker(fileCleaningTracker);
+
+        ServletFileUpload upload = new ServletFileUpload(factory)
+        List<FileItem> items = upload.parseRequest(this.req)
+        items.each { item ->
+            String key = item.getFieldName()
+            if (item.isFormField()) {
+                this.POST.add(key, item.getString(this.defaultEncoding))
+            } else {
+                this.FILE.add(key, item)
             }
         }
     }
@@ -387,7 +438,7 @@ class ToolKit
         this.config = ctx.getAttribute(CONTEXT_ATTR_CONFIG_CACHE) ?: new ConfigSlurper().
             parse(ctx.getResourceAsStream('/WEB-INF/config.groovy').getText('UTF-8'))
         this.sess = new SessionWrapper(req)
-        this.sreqw = new SeparateRequestWrapper(req, this.config.defaultEncoding)
+        this.sreqw = new SeparateRequestWrapper(req, ctx, this.config.defaultEncoding)
         this.dbcon = new SampleH2DbConnector(ctx)
     }
 
