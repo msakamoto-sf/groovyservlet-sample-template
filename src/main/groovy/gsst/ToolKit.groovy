@@ -15,6 +15,8 @@ limitations under the License.
 }}} */
 package gsst
 
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 import javax.servlet.*
 import javax.servlet.http.*
 import groovy.util.logging.*
@@ -411,6 +413,88 @@ class SeparateRequestWrapper
                 this.FILE.add(key, item)
             }
         }
+    }
+}
+
+// }}}
+// {{{ UrlMap
+
+@Slf4j
+class UrlMap
+{
+    ConfigObject umconfig
+    def patterns = []
+    boolean verbose
+
+    def UrlMap(ServletContext ctx)
+    {
+        umconfig = new ConfigSlurper().parse(ctx.getResourceAsStream('/WEB-INF/urlmap.groovy').getText('UTF-8'))
+        verbose = umconfig.verbose_log
+
+        if (verbose) { log.trace('loads urlmappings...start') }
+        umconfig.urlmap.each { umitem ->
+            def boilerplate = umitem[0]
+            def regex = umitem[1]
+            def pnames = []
+            regex.each { embed ->
+                pnames << embed.key
+                String replaceStr = '@' + embed.key + '@'
+                boilerplate = boilerplate.replace(replaceStr, embed.value)
+            }
+            if (verbose) { log.trace(boilerplate) }
+            if (verbose) { log.trace(pnames.toString()) }
+            if (verbose) { log.trace(umitem[2]) }
+            Pattern pt = Pattern.compile(boilerplate)
+            patterns << [pattern:pt, pnames:pnames, forwardto:umitem[2]]
+        }
+        if (verbose) { log.trace("${patterns.size()} mappings loaded.") }
+    }
+
+    def getForwarder(String pathInfo)
+    {
+        if (verbose) { log.trace("getForwarder('${pathInfo}') starting...") }
+        def r = [forwardto: umconfig.nomap, params: [:]]
+        patterns.each { patinfo ->
+            Matcher m = patinfo.pattern.matcher(pathInfo)
+            if (verbose) { log.trace("check for ${patinfo.pattern}") }
+            if (m.getCount() == 0) {
+                return
+            }
+            if (verbose) { log.trace("hit for ${patinfo.pattern}") }
+            def iparams = [:]
+            int groupc = m.groupCount()
+            if (groupc > 0) {
+                for (i in 1..groupc) {
+                    def pn = patinfo.pnames[i-1]
+                    iparams[pn] = m[0][i]
+                }
+            }
+            r.forwardto = umconfig.forward_base + patinfo.forwardto
+            r.params = iparams
+        }
+        if (verbose) { log.trace("forward info : ${r}") }
+        return r
+    }
+
+    String buildUrl(String boilerplate, params)
+    {
+        params.each { p ->
+            if (p.key && p.value) {
+                boilerplate = boilerplate.replace('@' + p.key + '@', p.value.toString())
+            }
+        }
+        return boilerplate
+    }
+
+    static def extractOriginalInfo(HttpServletRequest req)
+    {
+        def o = [:]
+        o.request_uri = req.getAttribute('javax.servlet.forward.request_uri') ?: ''
+        o.context_path = req.getAttribute('javax.servlet.forward.context_path') ?: ''
+        o.servlet_path = req.getAttribute('javax.servlet.forward.servlet_path') ?: ''
+        o.path_info = req.getAttribute('javax.servlet.forward.path_info') ?: ''
+        o.query_string = req.getAttribute('javax.servlet.forward.query_string') ?: ''
+        return o
     }
 }
 
