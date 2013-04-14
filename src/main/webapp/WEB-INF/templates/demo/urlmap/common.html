@@ -1,0 +1,39 @@
+<h1>{{title}}</h1>
+
+<div>
+  <h3>path_params</h3>
+  <table class="table table-bordered table-hover table-condensed">
+    {{#path_params}}
+    <tr>
+      <th>{{key}}</th>
+      <td>{{value}}</td>
+    </tr>
+    {{/path_params}}
+  </table>
+</div>
+
+<div>
+  <h3>original_path_info</h3>
+  <table class="table table-bordered table-hover table-condensed">
+    {{#original_path_info}}
+    <tr>
+      <th>{{key}}</th>
+      <td>{{value}}</td>
+    </tr>
+    {{/original_path_info}}
+  </table>
+</div>
+
+<div>
+  <h3>forwarded_request</h3>
+  <table class="table table-bordered table-hover table-condensed">
+    {{#forwarded_request}}
+    <tr>
+      <th>{{key}}</th>
+      <td>{{value}}</td>
+    </tr>
+    {{/forwarded_request}}
+  </table>
+</div>
+
+<p><a href="{{context_path}}/demo/urlmap/">back</a></p>
