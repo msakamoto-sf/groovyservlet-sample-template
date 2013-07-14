@@ -1,0 +1,47 @@
+<h1>{{title}}</h1>
+<div>
+  <h3>Name - Values in URL Query</h3>
+  <ul>
+  {{#gets}}
+  <li>{{key}}<ul>{{#values}}<li>{{.}}</li>{{/values}}</ul></li>
+  {{/gets}}
+  {{^gets}}<li>(empty)</li>{{/gets}}
+  </ul>
+</div>
+<h3>Request Form</h3>
+<form action="{{context_path}}/demo/forms/get.groovy" class="form-horizontal">
+  <table class="table">
+    <tr>
+      <th>var1</th>
+      <td><input type="text" name="var1" value="val1"></td>
+    </tr>
+    <tr>
+      <th>var2</th>
+      <td><input type="text" name="var2" value="日本語"></td>
+    </tr>
+    <tr>
+      <th>日本語キー</th>
+      <td><input type="text" name="日本語キー" value="日本語値"></td>
+    </tr>
+    <tr>
+      <th>arr1(1)</th>
+      <td><input type="text" name="arr1" value="el1"></td>
+    </tr>
+    <tr>
+      <th>arr1(2)</th>
+      <td><input type="text" name="arr1" value="el2"></td>
+    </tr>
+    <tr>
+      <th>日本語配列(1)</th>
+      <td><input type="text" name="日本語配列" value="日本語要素1"></td>
+    </tr>
+    <tr>
+      <th>日本語配列(2)</th>
+      <td><input type="text" name="日本語配列" value="日本語要素2"></td>
+    </tr>
+  </table>
+  <button type="submit" class="btn">send</button>
+</form>
+<p>
+  <a href="{{context_path}}/demo/forms/">back</a>
+</p>

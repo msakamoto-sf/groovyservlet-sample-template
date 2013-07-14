@@ -4,9 +4,12 @@ new ToolKit(request, response, context).serve {
 
 def m = [:]
 m['title'] = 'Context Datas'
+
+m['server'] = context.getServerInfo()
+
 def initparams = []
 context.getInitParameterNames().each {
-    attrs << ['key' : it, 'value' : context.getInitParameter(it).dump()]
+    initparams << ['key' : it, 'value' : context.getInitParameter(it).dump()]
 }
 m['initparams'] = initparams
 

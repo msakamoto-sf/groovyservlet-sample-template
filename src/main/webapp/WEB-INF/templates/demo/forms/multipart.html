@@ -1,0 +1,65 @@
+<h1>{{title}}</h1>
+<div>
+  <h3>Name - Values in URL Query</h3>
+  <ul>
+  {{#gets}}
+  <li>{{key}}<ul>{{#values}}<li>{{.}}</li>{{/values}}</ul></li>
+  {{/gets}}
+  {{^gets}}<li>(empty)</li>{{/gets}}
+  </ul>
+</div>
+<div>
+  <h3>Name - Values in multipart/form-data, form-field</h3>
+  <ul>
+  {{#posts}}
+  <li>{{key}}<ul>{{#values}}<li>{{.}}</li>{{/values}}</ul></li>
+  {{/posts}}
+  {{^posts}}<li>(empty)</li>{{/posts}}
+  </ul>
+</div>
+<div>
+  <h3>Name - Values in multipart/form-data, file-field</h3>
+  <ul>
+  {{#files}}
+  <li>{{key}}<ul>{{#values}}<li>{{content_type}}, {{size}}, {{{content_body}}}</li>{{/values}}</ul></li>
+  {{/files}}
+  {{^files}}<li>(empty)</li>{{/files}}
+  </ul>
+</div>
+<h3>Request Form</h3>
+<form action="{{context_path}}/demo/forms/multipart.groovy?{{dummy_url_query}}" method="post" enctype="multipart/form-data" class="form-horizontal">
+  <table class="table">
+    <tr>
+      <th>var1</th>
+      <td><input type="text" name="var1" value="val1"></td>
+    </tr>
+    <tr>
+      <th>var2</th>
+      <td><input type="text" name="var2" value="日本語"></td>
+    </tr>
+    <tr>
+      <th>arr1(1)</th>
+      <td><input type="text" name="arr1" value="el1"></td>
+    </tr>
+    <tr>
+      <th>arr1(2)</th>
+      <td><input type="text" name="arr1" value="el2"></td>
+    </tr>
+    <tr>
+      <th>画像ファイルアップロード</th>
+      <td><input type="file" name="imagefile"></td>
+    </tr>
+    <tr>
+      <th>画像ファイルアップロード(配列)(1)</th>
+      <td><input type="file" name="imagearray"></td>
+    </tr>
+    <tr>
+      <th>画像ファイルアップロード(配列)(2)</th>
+      <td><input type="file" name="imagearray"></td>
+    </tr>
+  </table>
+  <button type="submit" class="btn">send</button>
+</form>
+<p>
+  <a href="{{context_path}}/demo/forms/">back</a>
+</p>

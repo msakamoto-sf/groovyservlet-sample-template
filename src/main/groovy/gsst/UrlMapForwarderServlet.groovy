@@ -16,17 +16,22 @@ limitations under the License.
 package gsst
 
 import org.apache.commons.lang3.*
+import groovy.util.logging.*
 import javax.servlet.*
-import groovy.servlet.*
+import javax.servlet.http.*
 
-public class AdjustedGroovyServlet extends GroovyServlet {
-    public URLConnection getResourceConnection(String name) throws ResourceException {
-        ServletConfig sconfig = getServletConfig()
-        ServletContext sctx = sconfig.getServletContext()
-        String sinfo = sctx.getServerInfo().toLowerCase()
-        if (sinfo && sinfo.contains("tomcat") && SystemUtils.IS_OS_WINDOWS) {
-            if (name.startsWith("file:")) name = name.replaceFirst("file:", "")
-        }
-        return super.getResourceConnection(name)
+@Slf4j
+public class UrlMapForwarderServlet extends HttpServlet {
+
+    public static final String PATH_PARAM_ATTR_NAME = 'gsst.urlmap.path_param'
+
+    void service(HttpServletRequest req, HttpServletResponse res)
+    {
+        ServletContext ctx = getServletContext()
+        UrlMap um = new UrlMap(ctx)
+        def fwinfo = um.getForwarder(req.getPathInfo())
+        req.setAttribute(PATH_PARAM_ATTR_NAME, fwinfo.params)
+        RequestDispatcher rd = ctx.getRequestDispatcher(fwinfo.forwardto)
+        rd.forward(req, res)
     }
 }

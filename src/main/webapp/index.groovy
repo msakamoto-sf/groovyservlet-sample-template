@@ -14,6 +14,7 @@ headers.each {
 
 def m = [:]
 m['title'] = 'Welcome'
+m['server_info'] = context.getServerInfo()
 m['req'] = [
     [key: 'context_path', value: request.getContextPath()],
     [key: 'method', value: request.getMethod()],
